@@ -140,3 +140,54 @@ Open http://localhost:3000 in your browser to see the project.
 - [Dagster Documentation](https://docs.dagster.io/)
 - [Dagster Sling Integration](https://docs.dagster.io/integrations/sling)
 - [Sling Documentation](https://docs.slingdata.io/)
+
+## Investigation: Warning/Error Handling Differences
+
+### Reported Issue
+Users have reported that errors like the sling binary download failure are surfaced in the Pythonic version but not in the Components version, leading to a "perpetual execution state".
+
+### Investigation Findings
+
+#### 1. Warning Suppression Analysis
+The `load_from_defs_folder()` function (used by both approaches in dg projects) is decorated with `@suppress_dagster_warnings`. However, testing shows that this decorator does **NOT** suppress `UserWarning` from the sling package - the warning is still issued.
+
+The decorator only suppresses Dagster-specific warnings:
+- `DeprecationWarning`
+- `SupersessionWarning`
+- `PreviewWarning`
+- `BetaWarning`
+
+#### 2. When the Sling Binary Warning is Issued
+The sling binary download happens at **import time** when the `sling` module is first loaded (see `sling/bin.py:172-181`). If the download fails:
+1. A `print()` statement outputs: "Downloading sling binary..."
+2. A `warnings.warn()` is issued: "Failed to download sling binary: ..."
+3. It attempts to find sling in PATH as a fallback
+
+#### 3. Potential Differences in Execution Context
+
+**Component Loading Path:**
+```
+load_from_defs_folder() → ComponentTree.build_defs() → SlingReplicationCollectionComponent.build_asset() → @sling_assets decorated function
+```
+
+**Pythonic Loading Path (outside dg projects):**
+```
+Direct Python module import → @sling_assets decorator → SlingResource.replicate()
+```
+
+When using a traditional Dagster setup (without dg/components), the Pythonic approach imports modules directly without the `@suppress_dagster_warnings` context, which may result in different warning visibility.
+
+#### 4. Error Swallowing in Metadata Fetching
+In `dagster_sling/sling_event_iterator.py`, the `fetch_row_count_metadata()` and `fetch_column_metadata()` functions have try/except blocks that log errors as warnings rather than raising them:
+```python
+except Exception as e:
+    context.log.warning(f"Failed to fetch ... for stream %s\nException: {e}", ...)
+```
+
+This affects both approaches equally.
+
+### Test Script
+A test script `test_log_comparison.py` is included to help diagnose warning behavior in different loading scenarios:
+```bash
+uv run python test_log_comparison.py
+```
