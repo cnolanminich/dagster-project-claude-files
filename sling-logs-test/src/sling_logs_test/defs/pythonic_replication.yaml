@@ -1,0 +1,14 @@
+source: LOCAL_FILE
+target: LOCAL_FILE
+
+defaults:
+  mode: full-refresh
+
+streams:
+  file://data/source.csv:
+    object: file:///tmp/sling_pythonic_output/users.csv
+    meta:
+      dagster:
+        asset_key: pythonic_sling_asset
+        description: "Asset created via Pythonic @sling_assets decorator"
+        group: pythonic_approach

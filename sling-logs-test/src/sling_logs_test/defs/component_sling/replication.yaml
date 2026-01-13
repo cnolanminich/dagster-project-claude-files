@@ -1,0 +1,14 @@
+source: LOCAL_FILE
+target: LOCAL_FILE
+
+defaults:
+  mode: full-refresh
+
+streams:
+  file://data/source.csv:
+    object: file:///tmp/sling_component_output/users.csv
+    meta:
+      dagster:
+        asset_key: component_sling_asset
+        description: "Asset created via SlingReplicationComponent"
+        group: component_approach

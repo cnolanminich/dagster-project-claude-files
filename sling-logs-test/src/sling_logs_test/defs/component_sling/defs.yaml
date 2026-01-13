@@ -1,0 +1,8 @@
+type: dagster_sling.SlingReplicationCollectionComponent
+
+attributes:
+  connections:
+    LOCAL_FILE:
+      type: file
+  replications:
+    - path: replication.yaml
