@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "metadata_assets"
+version = "0.1.0"
+description = "Dagster project demonstrating metadata passing between assets"
+requires-python = ">=3.9"
+dependencies = [
+    "dagster>=1.9.0",
+    "dagster-webserver>=1.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[tool.dagster]
+module_name = "metadata_assets"
