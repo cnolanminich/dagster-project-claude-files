@@ -1,0 +1,43 @@
+type: dagster_data_quality_demo.components.azure_function_data_quality.AzureFunctionDataQualityComponent
+
+attributes:
+  function_app_url: "https://data-quality-functions.azurewebsites.net"
+  function_name: "validate-customer-data"
+  function_key_env_var: "AZURE_FUNCTION_KEY"
+  asset_key:
+    - "data_quality"
+    - "customer_validation_report"
+  upstream_asset_keys:
+    - ["marts", "customer_360"]
+    - ["marts", "revenue_analytics"]
+  demo_mode: true
+  checks:
+    - name: "null_email_check"
+      description: "Validates that customer records have valid email addresses"
+      check_type: "null_check"
+      parameters:
+        column: "email"
+        table: "customer_360"
+
+    - name: "revenue_consistency_check"
+      description: "Ensures revenue figures are consistent across sources"
+      check_type: "consistency"
+      parameters:
+        source_table: "customer_360"
+        target_table: "revenue_analytics"
+        column: "total_revenue"
+
+    - name: "duplicate_customer_check"
+      description: "Identifies potential duplicate customer records"
+      check_type: "uniqueness"
+      parameters:
+        table: "customer_360"
+        columns: ["customer_name", "industry"]
+
+    - name: "freshness_check"
+      description: "Ensures data is not stale"
+      check_type: "freshness"
+      parameters:
+        table: "customer_360"
+        timestamp_column: "_updated_at"
+        max_age_hours: 24

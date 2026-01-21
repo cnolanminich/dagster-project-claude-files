@@ -1,0 +1,70 @@
+type: dagster_data_quality_demo.components.snowflake_data_quality.SnowflakeDataQualityComponent
+
+attributes:
+  snowflake_account: "{{ env.SNOWFLAKE_ACCOUNT }}"
+  snowflake_user_env_var: "SNOWFLAKE_USER"
+  snowflake_password_env_var: "SNOWFLAKE_PASSWORD"
+  snowflake_warehouse: "DEMO_WH"
+  snowflake_database: "DEMO_DB"
+  snowflake_schema: "DBT_DEV"
+  asset_key:
+    - "data_quality"
+    - "snowflake_validation_report"
+  upstream_asset_keys:
+    - ["marts", "customer_360"]
+    - ["marts", "revenue_analytics"]
+  demo_mode: true
+  rules:
+    - name: "customer_pk_uniqueness"
+      description: "Verify customer_key is unique in customer_360"
+      validation_query: |
+        SELECT COUNT(*) - COUNT(DISTINCT customer_key)
+        FROM marts.customer_360
+      severity: "error"
+      threshold: 0
+
+    - name: "revenue_non_negative"
+      description: "Ensure all revenue values are non-negative"
+      validation_query: |
+        SELECT COUNT(*)
+        FROM marts.revenue_analytics
+        WHERE total_revenue < 0
+      severity: "error"
+      threshold: 0
+
+    - name: "customer_name_not_null"
+      description: "Verify customer names are populated"
+      validation_query: |
+        SELECT COUNT(*)
+        FROM marts.customer_360
+        WHERE customer_name IS NULL OR TRIM(customer_name) = ''
+      severity: "error"
+      threshold: 0
+
+    - name: "win_rate_range"
+      description: "Verify win rate percentage is within valid range"
+      validation_query: |
+        SELECT COUNT(*)
+        FROM marts.customer_360
+        WHERE win_rate_pct < 0 OR win_rate_pct > 100
+      severity: "error"
+      threshold: 0
+
+    - name: "transaction_count_consistency"
+      description: "Verify transaction counts are reasonable (warn if > 1000 in single month)"
+      validation_query: |
+        SELECT COUNT(*)
+        FROM marts.revenue_analytics
+        WHERE transaction_count > 1000
+      severity: "warning"
+      threshold: 10
+
+    - name: "orphaned_transactions"
+      description: "Check for transactions without matching customers"
+      validation_query: |
+        SELECT COUNT(*)
+        FROM staging.stg_transactions t
+        LEFT JOIN staging.stg_customers c ON t.customer_id = c.customer_id
+        WHERE c.customer_id IS NULL
+      severity: "warning"
+      threshold: 5

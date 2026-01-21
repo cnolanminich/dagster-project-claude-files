@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: customer_360
+    description: "Complete customer view with opportunity and transaction metrics"
+    columns:
+      - name: customer_key
+        description: "Surrogate key for the customer"
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Source system customer ID"
+        data_tests:
+          - not_null
+      - name: win_rate_pct
+        description: "Percentage of opportunities won"
+
+  - name: revenue_analytics
+    description: "Monthly revenue analytics by industry and source"
+    columns:
+      - name: month
+        description: "Month of the revenue"
+        data_tests:
+          - not_null
+      - name: total_revenue
+        description: "Total revenue from all sources"
+        data_tests:
+          - not_null

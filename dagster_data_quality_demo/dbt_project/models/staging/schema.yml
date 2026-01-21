@@ -1,0 +1,54 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Staged customer data from Salesforce and NetSuite"
+    columns:
+      - name: customer_key
+        description: "Surrogate key for the customer"
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Source system customer ID"
+        data_tests:
+          - not_null
+      - name: customer_name
+        description: "Customer or company name"
+        data_tests:
+          - not_null
+      - name: source_system
+        description: "Origin system (salesforce or netsuite)"
+        data_tests:
+          - accepted_values:
+              values: ['salesforce', 'netsuite']
+
+  - name: stg_opportunities
+    description: "Staged sales opportunities from Salesforce"
+    columns:
+      - name: opportunity_id
+        description: "Unique opportunity identifier"
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Associated customer/account ID"
+        data_tests:
+          - not_null
+      - name: amount
+        description: "Opportunity value"
+        data_tests:
+          - not_null
+
+  - name: stg_transactions
+    description: "Staged financial transactions from NetSuite"
+    columns:
+      - name: transaction_id
+        description: "Unique transaction identifier"
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Associated customer ID"
+        data_tests:
+          - not_null

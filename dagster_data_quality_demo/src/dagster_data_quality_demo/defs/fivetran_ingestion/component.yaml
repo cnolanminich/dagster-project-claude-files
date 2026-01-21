@@ -1,0 +1,26 @@
+type: dagster_data_quality_demo.components.fivetran_demo.FivetranDemoComponent
+
+attributes:
+  api_key_env_var: FIVETRAN_API_KEY
+  api_secret_env_var: FIVETRAN_API_SECRET
+  demo_mode: true
+  connectors:
+    # CRM connector - Salesforce to Snowflake
+    - connector_id: salesforce_crm_001
+      name: Salesforce CRM
+      destination_schema: fivetran_salesforce
+      sync_tables:
+        - accounts
+        - contacts
+        - opportunities
+        - leads
+
+    # ERP connector - NetSuite to Snowflake
+    - connector_id: netsuite_erp_001
+      name: NetSuite ERP
+      destination_schema: fivetran_netsuite
+      sync_tables:
+        - customers
+        - invoices
+        - transactions
+        - products

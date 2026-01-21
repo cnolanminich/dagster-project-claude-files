@@ -1,0 +1,30 @@
+version: 2
+
+sources:
+  - name: fivetran_salesforce
+    description: "Salesforce CRM data synced via Fivetran"
+    database: "{{ env_var('SNOWFLAKE_DATABASE', 'DEMO_DB') }}"
+    schema: fivetran_salesforce
+    tables:
+      - name: accounts
+        description: "Salesforce account records"
+      - name: contacts
+        description: "Salesforce contact records"
+      - name: opportunities
+        description: "Salesforce opportunity records"
+      - name: leads
+        description: "Salesforce lead records"
+
+  - name: fivetran_netsuite
+    description: "NetSuite ERP data synced via Fivetran"
+    database: "{{ env_var('SNOWFLAKE_DATABASE', 'DEMO_DB') }}"
+    schema: fivetran_netsuite
+    tables:
+      - name: customers
+        description: "NetSuite customer records"
+      - name: invoices
+        description: "NetSuite invoice records"
+      - name: transactions
+        description: "NetSuite transaction records"
+      - name: products
+        description: "NetSuite product catalog"
