@@ -1,0 +1,53 @@
+# Example: Dask DataFrame Component Configuration (Demo Mode)
+#
+# This component automatically extracts and surfaces:
+# - Column schema (dagster/column_schema)
+# - Row count (dagster/row_count)
+# - Partition information
+#
+# Use demo_mode: true for local development without a Dask cluster
+
+type: dagster_dask_lineage.components.DaskDataFrameComponent
+
+attributes:
+  # Demo mode uses mock data - great for local development
+  demo_mode: true
+
+  # Cluster configuration (only used when demo_mode: false)
+  cluster:
+    cluster_type: local
+    n_workers: 2
+    threads_per_worker: 2
+    memory_limit: "1GB"
+
+  # Whether to compute row counts (can be expensive for large data)
+  compute_row_count: true
+
+  # Base path for data storage
+  base_path: "/tmp/dagster_dask_demo"
+
+  # Define your data pipeline assets
+  # Each asset will automatically get schema and row count metadata
+  assets:
+    - name: raw_orders
+      description: "Raw orders data ingested from source"
+      group_name: dask_pipeline
+      compute_row_count: true
+
+    - name: raw_customers
+      description: "Raw customer data ingested from source"
+      group_name: dask_pipeline
+      compute_row_count: true
+
+    - name: cleaned_orders
+      description: "Orders data after cleaning and validation"
+      deps:
+        - raw_orders
+      group_name: dask_pipeline
+
+    - name: customer_metrics
+      description: "Aggregated customer metrics"
+      deps:
+        - raw_customers
+        - cleaned_orders
+      group_name: dask_pipeline

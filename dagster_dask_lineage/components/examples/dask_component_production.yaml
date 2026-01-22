@@ -1,0 +1,45 @@
+# Example: Dask DataFrame Component Configuration (Production Mode)
+#
+# This configuration connects to a real Dask cluster.
+# Schema and row count are still automatically extracted.
+
+type: dagster_dask_lineage.components.DaskDataFrameComponent
+
+attributes:
+  # Production mode - connects to real cluster
+  demo_mode: false
+
+  # Connect to existing Dask cluster
+  cluster:
+    cluster_type: existing
+    scheduler_address: "tcp://dask-scheduler:8786"
+
+  # For large data, you might want to skip row count computation
+  compute_row_count: false  # Avoids expensive computation on large datasets
+
+  # Use shared storage accessible by all Dask workers
+  base_path: "s3://my-bucket/dagster/dask_pipeline"
+
+  # Production data pipeline
+  assets:
+    - name: raw_events
+      key_prefix: ["bronze"]
+      description: "Raw event stream from Kafka"
+      group_name: data_pipeline
+      compute_row_count: false  # Too expensive for billions of rows
+
+    - name: processed_events
+      key_prefix: ["silver"]
+      description: "Cleaned and deduplicated events"
+      deps:
+        - bronze/raw_events
+      group_name: data_pipeline
+      compute_row_count: false
+
+    - name: aggregated_metrics
+      key_prefix: ["gold"]
+      description: "Business metrics aggregated by day"
+      deps:
+        - silver/processed_events
+      group_name: data_pipeline
+      compute_row_count: true  # Smaller dataset, can compute count
