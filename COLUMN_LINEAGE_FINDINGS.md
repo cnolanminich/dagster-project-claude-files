@@ -6,6 +6,59 @@ This document summarizes the investigation into whether Dask provides sufficient
 
 **TL;DR: Dask provides excellent schema metadata but does NOT natively support column-level lineage tracking. Column lineage must be implemented explicitly by the developer.**
 
+---
+
+## What the `dagster-dask` Library Provides
+
+The official `dagster-dask` library (installed via `pip install dagster-dask`) provides:
+
+### 1. `dask_executor` - Distributed Step Execution
+
+```python
+from dagster import job
+from dagster_dask import dask_executor
+
+@job(executor_def=dask_executor)
+def my_job():
+    pass
+```
+
+This distributes **execution steps (ops)** across a Dask cluster. Key points:
+- Each op runs on a different Dask worker
+- Data passes between ops via IO Managers (requires shared storage)
+- Supports cluster types: local, yarn, ssh, pbs, slurm, kubernetes, etc.
+
+### 2. Resource Requirements Tags
+
+```python
+@op(tags={"dagster-dask/resource_requirements": {"GPU": 1}})
+def gpu_op():
+    pass
+```
+
+### What `dagster-dask` Does NOT Provide
+
+| Feature | Provided? |
+|---------|-----------|
+| `dask_executor` for step distribution | Yes |
+| `DaskResource` ConfigurableResource | **No** |
+| Schema extraction utilities | **No** |
+| Column lineage tracking | **No** |
+| Row count utilities | **No** |
+
+**Important**: The `DaskResource` in this project is a **custom implementation**, not from the `dagster-dask` library. We built it to demonstrate in-asset parallelism.
+
+### Two Ways to Use Dask with Dagster
+
+| Approach | What it does | When to use |
+|----------|--------------|-------------|
+| `dask_executor` (from dagster-dask) | Distributes **ops/steps** across workers | Many independent ops that can parallelize |
+| Custom `DaskResource` (this project) | Parallelizes **computation within** an asset | Large DataFrame processing in one asset |
+
+These approaches can be combined - you can use both `dask_executor` to distribute steps AND use Dask within each step for data processing.
+
+---
+
 ## What Dask Provides
 
 ### Schema Information (Well Supported)
