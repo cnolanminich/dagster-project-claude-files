@@ -5,26 +5,32 @@ This module configures the Dagster code location with:
 - Jobs using dagster-dask's dask_executor for distributed STEP execution
 - Assets demonstrating schema and lineage tracking
 
-TWO DASK INTEGRATION PATTERNS:
-==============================
-1. `dask_executor` (from dagster-dask): Distributes ops/steps across Dask workers
-2. `DaskResource` (custom): Parallelizes computation within a single asset
+KEY INSIGHT: You can use BOTH approaches together!
+==================================================
+1. `dask_executor` (from dagster-dask): Distributes assets across Dask workers
+2. Dask DataFrames within assets: Parallel processing + schema extraction
 
-This project demonstrates BOTH approaches.
+The `combined_dask_job` demonstrates both working together.
 """
 
 from dagster import Definitions, load_assets_from_modules
 
-from dagster_dask_lineage import assets
-from dagster_dask_lineage.jobs import dask_distributed_job, default_executor_job
+from dagster_dask_lineage import assets, assets_combined
+from dagster_dask_lineage.jobs import (
+    combined_dask_job,
+    dask_distributed_job,
+    default_executor_job,
+)
 from dagster_dask_lineage.resources import DaskResource
 
-# Load all assets from the assets module
-all_assets = load_assets_from_modules([assets])
+# Load all assets from both modules
+all_assets = load_assets_from_modules([assets, assets_combined])
 
 # Configure resources
 # Note: This DaskResource is our CUSTOM resource for in-asset parallelism
 # It is NOT from the dagster-dask library
+# The combined_example assets don't need this resource - they create
+# Dask DataFrames directly without a managed client
 resources = {
     "dask": DaskResource(
         cluster_type="local",
@@ -36,6 +42,6 @@ resources = {
 
 defs = Definitions(
     assets=all_assets,
-    jobs=[dask_distributed_job, default_executor_job],
+    jobs=[dask_distributed_job, default_executor_job, combined_dask_job],
     resources=resources,
 )
