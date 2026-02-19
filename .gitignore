@@ -1,0 +1,20 @@
+# Dagster artifacts
+.dagster_home/
+*.egg-info/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Python
+*.egg
+dist/
+build/
+*.so
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
