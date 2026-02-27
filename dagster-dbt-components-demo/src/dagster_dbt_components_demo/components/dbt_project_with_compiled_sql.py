@@ -12,17 +12,20 @@ from dagster_dbt.dbt_project import DbtProject
 class DbtProjectWithCompiledSql(DbtProjectComponent):
     """A DbtProjectComponent subclass that appends compiled SQL to asset descriptions.
 
-    This component runs ``dbt compile`` (instead of the default ``dbt parse``)
+    This component runs ``dbt compile`` after the default ``dbt parse`` step
     so that the manifest includes the fully-resolved SQL for every model.
     It then adds that compiled SQL to each asset's description under a
     **Compiled SQL** heading.
     """
 
     def write_state_to_path(self, state_path: Path) -> None:
+        # The base class runs `dbt parse`, which does not populate
+        # compiled_code in the manifest.
         super().write_state_to_path(state_path)
-        # The default preparer runs `dbt parse`, which does not populate
-        # compiled_code in the manifest. Re-run `dbt compile` so the
-        # manifest stored at the state path includes compiled SQL.
+
+        # Run `dbt compile` on the prepared project so the manifest
+        # includes compiled_code.  This reuses the partial_parse cache
+        # from the parse step above, so it's fast.
         project = self._project_manager.get_project(state_path)
         DbtCliResource(project_dir=project).cli(
             ["compile", "--quiet"],
