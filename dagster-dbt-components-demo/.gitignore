@@ -210,3 +210,7 @@ logs/
 
 # Dagster
 .local_defs_state/
+.dg/
+
+# dbt user config
+.user.yml
