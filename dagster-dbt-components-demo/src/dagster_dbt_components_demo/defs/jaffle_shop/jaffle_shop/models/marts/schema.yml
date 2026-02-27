@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: customers
+    description: "Customer dimension table with order summary metrics"
+    columns:
+      - name: customer_id
+        description: "Primary key for customers"
+      - name: customer_name
+        description: "Customer full name"
+      - name: customer_email
+        description: "Customer email address"
+      - name: total_orders
+        description: "Total number of orders placed"
+      - name: total_revenue
+        description: "Total revenue from completed orders"
+      - name: first_order_date
+        description: "Date of first order"
+      - name: most_recent_order_date
+        description: "Date of most recent order"
+
+  - name: orders
+    description: "Order fact table with customer details"
+    columns:
+      - name: order_id
+        description: "Primary key for orders"
+      - name: customer_id
+        description: "Foreign key to customers"
+      - name: customer_name
+        description: "Customer name (denormalized)"
+      - name: order_date
+        description: "Date the order was placed"
+      - name: order_status
+        description: "Current status of the order"
+      - name: order_amount
+        description: "Total amount of the order"

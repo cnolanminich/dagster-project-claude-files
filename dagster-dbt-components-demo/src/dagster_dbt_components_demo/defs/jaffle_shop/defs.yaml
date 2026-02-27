@@ -1,0 +1,3 @@
+type: dagster_dbt_components_demo.components.dbt_project_with_compiled_sql.DbtProjectWithCompiledSql
+attributes:
+  project: jaffle_shop

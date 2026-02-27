@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Staged customer data with renamed columns"
+    columns:
+      - name: customer_id
+        description: "Primary key for customers"
+      - name: customer_name
+        description: "Customer full name"
+      - name: customer_email
+        description: "Customer email address"
+
+  - name: stg_orders
+    description: "Staged order data with renamed columns"
+    columns:
+      - name: order_id
+        description: "Primary key for orders"
+      - name: customer_id
+        description: "Foreign key to customers"
+      - name: order_date
+        description: "Date the order was placed"
+      - name: order_status
+        description: "Current status of the order"
+      - name: order_amount
+        description: "Total amount of the order"
